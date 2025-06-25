@@ -14,7 +14,7 @@ class BrownNoisePlayer:
             dtype='float32',
             callback=self.audio_callback
         )
-        self.gain = 0.5
+        self.gain = 0.01
         self.running = False
         self.prev_sample = 0
 
@@ -53,8 +53,8 @@ class BrownNoiseUI:
         frame = ttk.Frame(self.root, padding=10)
         frame.pack(fill=tk.BOTH, expand=True)
 
-        self.volume_var = tk.DoubleVar(value=0.5)
-        volume_scale = ttk.Scale(frame, from_=0, to=1, orient='horizontal',
+        self.volume_var = tk.DoubleVar(value=0.01)
+        volume_scale = ttk.Scale(frame, from_=0, to=0.02, orient='horizontal',
                                  variable=self.volume_var, command=self.update_volume)
         volume_scale.pack(fill=tk.X, pady=5)
         ttk.Label(frame, text="Volume").pack()
