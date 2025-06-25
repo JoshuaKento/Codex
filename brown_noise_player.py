@@ -2,6 +2,7 @@ import numpy as np
 import sounddevice as sd
 import tkinter as tk
 from tkinter import ttk
+import threading
 
 class BrownNoisePlayer:
     def __init__(self, sample_rate=44100, block_size=1024):
@@ -19,6 +20,14 @@ class BrownNoisePlayer:
         self.prev_sample = 0
         self.wave_type = 'Brown'
         self.phase = 0
+        self._stop_event = threading.Event()
+        self._thread = threading.Thread(target=self._run_stream, daemon=True)
+        self._thread.start()
+
+    def _run_stream(self):
+        with self.stream:
+            while not self._stop_event.is_set():
+                sd.sleep(100)
 
     def audio_callback(self, outdata, frames, time, status):
         if status:
@@ -42,13 +51,12 @@ class BrownNoisePlayer:
 
     def start(self):
         self.running = True
-        if not self.stream.active:
-            self.stream.start()
 
     def stop(self):
         self.running = False
 
     def close(self):
+        self._stop_event.set()
         self.stream.stop()
         self.stream.close()
 
