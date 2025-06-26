@@ -34,9 +34,11 @@ class BrownNoisePlayer:
             print(status)
         if self.running:
             if self.wave_type == 'Brown':
-                white = np.random.normal(0, 0.1, frames)
-                data = np.cumsum(white) + self.prev_sample
-                self.prev_sample = data[-1]
+                white = np.random.normal(0, 1, frames)
+                data = np.empty(frames)
+                for i, w in enumerate(white):
+                    self.prev_sample = (self.prev_sample + 0.02 * w) / 1.02
+                    data[i] = self.prev_sample * 3.5
             elif self.wave_type == 'White':
                 data = np.random.normal(0, 0.1, frames)
             else:  # Sine
