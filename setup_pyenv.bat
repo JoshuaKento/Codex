@@ -6,6 +6,4 @@ pyenv install -s %PYTHON_VERSION%
 pyenv local %PYTHON_VERSION%
 
 pyenv exec python -m venv venv
-call venv\Scripts\activate
-
-pip install -r requirements.txt
+venv\Scripts\pip install -r requirements.txt

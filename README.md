@@ -19,9 +19,9 @@ Install [pyenv-win](https://github.com/pyenv-win/pyenv-win) and then run:
 
 ```powershell
 .\setup_pyenv.bat
-python brown_noise_player.py
+.\venv\Scripts\python.exe brown_noise_player.py
 ```
-The batch file uses `pyenv` to ensure a suitable Python version is available, creates the `venv` directory and installs the packages.
+The batch file uses `pyenv` to ensure a suitable Python version is available, then creates the `venv` directory and installs the packages.
 
 Move the volume slider to adjust the output level. Choose the wave type from
 the drop-down list to switch between brown noise, white noise and a sine wave.
