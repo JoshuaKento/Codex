@@ -17,8 +17,8 @@ The `setup.sh` script creates a Python virtual environment in `venv` and install
 
 Install [pyenv-win](https://github.com/pyenv-win/pyenv-win) and then run:
 
-```cmd
-setup_pyenv.bat
+```powershell
+.\setup_pyenv.bat
 python brown_noise_player.py
 ```
 The batch file uses `pyenv` to ensure a suitable Python version is available, creates the `venv` directory and installs the packages.
