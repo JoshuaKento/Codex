@@ -29,3 +29,15 @@ Use the **Start** and **Stop** buttons to control playback. Playback continues
 even when the window is not in the foreground. Brown noise generation uses a
 stable filter so it won't stall during long sessions. Select the output device
 from the new menu if your system has multiple audio outputs.
+
+## Pomodoro Timer
+
+This repository also includes a lightweight Pomodoro timer widget. Click the
+circular ring to choose a duration from 0–60 minutes. The timer begins
+counting down immediately and the current time is shown at the top.
+
+### Running
+
+```bash
+python pomodoro_timer.py
+```
