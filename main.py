@@ -2,53 +2,73 @@
 """PyQt6 Pomodoro timer with animated ring and schedule list."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional
 
-from PyQt6.QtCore import (
-    QSize,
-    QUrl,
-    QEasingCurve,
-    QPointF,
-    QPropertyAnimation,
-    Qt,
-    QTimer,
-    pyqtProperty,
-)
-from PyQt6.QtGui import (
-    QAction,
-    QColor,
-    QConicalGradient,
-    QFont,
-    QFontDatabase,
-    QPainter,
-    QPalette,
-    QPen,
-    
-)
-from PyQt6.QtMultimedia import QSoundEffect
-from PyQt6.QtWidgets import (
-    QApplication,
-    QCheckBox,
-    QGraphicsDropShadowEffect,
-    QGraphicsColorizeEffect,
-    QListView,
-    QMainWindow,
-    QPushButton,
-    QStyledItemDelegate,
-    QStyleOptionViewItem,
-    QStyle,
-    QWidget,
-    QHBoxLayout,
-    QVBoxLayout,
-    QLabel,
-    QLineEdit,
-    QColorDialog,
-    QFrame,
-)
-from PyQt6.QtCore import QAbstractListModel, QModelIndex, QVariant, QSettings
+# design constants
+BG_DARK = "#1b1b1b"
+BG_PANEL = "rgba(255,255,255,0.06)"
+ACCENT_START = "#00d2ff"
+ACCENT_END = "#3a7bd5"
+BREAK_START = "#ff4b2b"
+BREAK_END = "#ff416c"
+TEXT_PRIMARY = "#F5F8FB"
+
+try:
+    from PyQt6.QtCore import (
+        QSize,
+        QUrl,
+        QEasingCurve,
+        QPointF,
+        QPropertyAnimation,
+        Qt,
+        QTimer,
+        pyqtProperty,
+    )
+    from PyQt6.QtGui import (
+        QAction,
+        QColor,
+        QConicalGradient,
+        QFont,
+        QFontDatabase,
+        QPainter,
+        QPalette,
+        QPen,
+
+    )
+    from PyQt6.QtMultimedia import QSoundEffect
+    from PyQt6.QtWidgets import (
+        QApplication,
+        QCheckBox,
+        QGraphicsDropShadowEffect,
+        QGraphicsColorizeEffect,
+        QListView,
+        QMainWindow,
+        QPushButton,
+        QStyledItemDelegate,
+        QStyleOptionViewItem,
+        QStyle,
+        QWidget,
+        QHBoxLayout,
+        QVBoxLayout,
+        QLabel,
+        QLineEdit,
+        QColorDialog,
+        QFrame,
+    )
+    from PyQt6.QtCore import QAbstractListModel, QModelIndex, QVariant, QSettings
+except ModuleNotFoundError as exc:  # pragma: no cover - environment specific
+    raise SystemExit(
+        "PyQt6 is required to run this application. "
+        "Install dependencies with './setup.sh'."
+    ) from exc
 
 import resources.resources
+
+try:
+    import qtawesome as qta
+except ModuleNotFoundError:  # pragma: no cover - optional
+    qta = None
 
 
 class RingWidget(QWidget):
@@ -57,15 +77,18 @@ class RingWidget(QWidget):
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self._value = 0.0
+        self._ring_width = 14
+        self._break_mode = False
         self._anim = QPropertyAnimation(self, b"value", self)
         self._anim.setEasingCurve(QEasingCurve.Type.InOutCubic)
         self._anim.setDuration(1000)
         self._gradient = QConicalGradient(QPointF(0, 0), 0)
-        self._gradient.setColorAt(0.0, QColor("#00d2ff"))
-        self._gradient.setColorAt(1.0, QColor("#3a7bd5"))
+        self._gradient.setColorAt(0.0, QColor(ACCENT_START))
+        self._gradient.setColorAt(1.0, QColor(ACCENT_END))
         self._display = QLabel("00:00", self)
-        font = QFont("Rubik", 48, QFont.Weight.Bold)
+        font = QFont("Rubik SemiBold", 72)
         self._display.setFont(font)
+        self._display.setStyleSheet(f"color: {TEXT_PRIMARY}")
         self._display.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout = QVBoxLayout(self)
         layout.addWidget(self._display)
@@ -80,11 +103,12 @@ class RingWidget(QWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         rect = self.rect().adjusted(10, 10, -10, -10)
         pen = QPen()
-        pen.setWidth(12)
+        pen.setWidth(self._ring_width)
+        pen.setCapStyle(Qt.PenCapStyle.RoundCap)
         pen.setColor(QColor("#333"))
         painter.setPen(pen)
         painter.drawEllipse(rect)
-        pen.setColor(QColor("#fff"))
+        pen.setColor(QColor(TEXT_PRIMARY))
         pen.setBrush(self._gradient)
         painter.setPen(pen)
         span = int(-360 * self._value)
@@ -97,6 +121,12 @@ class RingWidget(QWidget):
     @value.setter
     def value(self, val: float) -> None:
         self._value = val
+        self.update()
+
+    def set_break_mode(self, enabled: bool) -> None:
+        self._break_mode = enabled
+        self._gradient.setColorAt(0.0, QColor(BREAK_START if enabled else ACCENT_START))
+        self._gradient.setColorAt(1.0, QColor(BREAK_END if enabled else ACCENT_END))
         self.update()
 
     def set_progress(self, fraction: float) -> None:
@@ -113,7 +143,7 @@ class RingWidget(QWidget):
 class Slot:
     time: str
     title: str = ""
-    color: QColor = QColor("#ffffff")
+    color: QColor = field(default_factory=lambda: QColor("#ffffff"))
     completed: bool = False
 
 
@@ -201,6 +231,7 @@ class PomodoroApp(QMainWindow):
         self.settings = QSettings("codex", "pomodoro")
         self.setWindowTitle("Pomodoro")
         self.resize(800, 480)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.timer_duration = 25 * 60
         self.remaining = self.timer_duration
         self.timer = QTimer(self)
@@ -209,7 +240,10 @@ class PomodoroApp(QMainWindow):
 
         self.load_theme()
 
-        central = QWidget(self)
+        central = QFrame(self)
+        central.setStyleSheet(
+            f"background-color: {BG_PANEL}; border-radius: 20px;"
+        )
         self.setCentralWidget(central)
         outer = QVBoxLayout(central)
 
@@ -230,21 +264,43 @@ class PomodoroApp(QMainWindow):
         outer.addLayout(main_layout)
 
         self.ring = RingWidget(self)
+        self.ring.set_break_mode(False)
         main_layout.addWidget(self.ring, 1)
 
         self.schedule_model = ScheduleModel()
         self.schedule_view = QListView()
         self.schedule_view.setModel(self.schedule_model)
         self.schedule_view.setItemDelegate(SlotDelegate(self.schedule_view))
+        self.schedule_view.setFont(QFont("Rubik SemiBold", 12))
+        self.schedule_view.setStyleSheet(f"color: {TEXT_PRIMARY};")
         main_layout.addWidget(self.schedule_view)
 
         btn_layout = QHBoxLayout()
-        self.play_btn = QPushButton("▶")
-        self.pause_btn = QPushButton("II")
-        self.reset_btn = QPushButton("⭮")
-        btn_layout.addWidget(self.play_btn)
-        btn_layout.addWidget(self.pause_btn)
-        btn_layout.addWidget(self.reset_btn)
+        self.play_btn = QPushButton()
+        self.pause_btn = QPushButton()
+        self.reset_btn = QPushButton()
+
+        for btn, icon_name in [
+            (self.play_btn, "fa.play"),
+            (self.pause_btn, "fa.pause"),
+            (self.reset_btn, "fa.refresh"),
+        ]:
+            if qta:
+                btn.setIcon(qta.icon(icon_name, color=TEXT_PRIMARY))
+                btn.setIconSize(QSize(24, 24))
+            else:
+                btn.setText(icon_name.split(".")[1].title())
+            btn.setFixedSize(56, 32)
+            btn.setStyleSheet(
+                f"background-color: {BG_PANEL}; border-radius: 16px; color: {TEXT_PRIMARY};"
+                "border: none;"
+            )
+            shadow = QGraphicsDropShadowEffect(btn)
+            shadow.setBlurRadius(8)
+            shadow.setOffset(0, 2)
+            btn.setGraphicsEffect(shadow)
+            btn_layout.addWidget(btn)
+
         vbox = QVBoxLayout()
         vbox.addStretch()
         vbox.addLayout(btn_layout)
@@ -265,7 +321,8 @@ class PomodoroApp(QMainWindow):
         self.addAction(self.shortcut_reset)
 
         self.shadow = QGraphicsDropShadowEffect(self)
-        self.shadow.setBlurRadius(12)
+        self.shadow.setBlurRadius(30)
+        self.shadow.setOffset(0, 0)
         self.shadow.setColor(QColor(0, 0, 0, 160))
         central.setGraphicsEffect(self.shadow)
 
@@ -282,8 +339,8 @@ class PomodoroApp(QMainWindow):
     def apply_theme(self, dark: bool) -> None:
         pal = self.palette()
         if dark:
-            pal.setColor(QPalette.ColorRole.Window, QColor("#111"))
-            pal.setColor(QPalette.ColorRole.WindowText, QColor("#eee"))
+            pal.setColor(QPalette.ColorRole.Window, QColor(BG_DARK))
+            pal.setColor(QPalette.ColorRole.WindowText, QColor(TEXT_PRIMARY))
         else:
             pal.setColor(QPalette.ColorRole.Window, QColor("#fff"))
             pal.setColor(QPalette.ColorRole.WindowText, QColor("#000"))
@@ -337,7 +394,7 @@ class PomodoroApp(QMainWindow):
 
 def main() -> None:
     app = QApplication([])
-    QFontDatabase.addApplicationFont(":/fonts/Rubik-Regular.ttf")
+    QFontDatabase.addApplicationFont(":/fonts/Rubik-SemiBold.ttf")
     res = PomodoroApp()
     res.show()
     app.exec()
