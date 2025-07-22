@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/">
+    <file>fonts/Rubik-Regular.ttf</file>
+    <file>audio/ding.mp3</file>
+  </qresource>
+</RCC>

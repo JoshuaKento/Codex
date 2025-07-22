@@ -1,2 +1,3 @@
 numpy
 sounddevice
+PyQt6>=6.6

@@ -51,3 +51,11 @@ second ticks in real time. A schedule panel on the right side lists every
 The current time is highlighted in this list.
 Two new buttons let you **Import** a text file into the schedule panel and
 **Export** its contents for later use.
+
+### PyQt6 Version
+
+A new PyQt6-based Pomodoro timer is available in `main.py`. It shows a circular progress ring with smooth animation and a schedule list. Run it with:
+
+```bash
+python main.py
+```
