@@ -56,7 +56,12 @@ try:
         QColorDialog,
         QFrame,
     )
-    from PyQt6.QtCore import QAbstractListModel, QModelIndex, QVariant, QSettings
+    from PyQt6.QtCore import (
+        QAbstractListModel,
+        QModelIndex,
+        QVariant,
+        QSettings,
+    )
 except ModuleNotFoundError as exc:  # pragma: no cover - environment specific
     raise SystemExit(
         "PyQt6 is required to run this application. "
