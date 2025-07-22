@@ -2,7 +2,7 @@
 """PyQt6 Pomodoro timer with animated ring and schedule list."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional
 
 try:
@@ -119,7 +119,7 @@ class RingWidget(QWidget):
 class Slot:
     time: str
     title: str = ""
-    color: QColor = QColor("#ffffff")
+    color: QColor = field(default_factory=lambda: QColor("#ffffff"))
     completed: bool = False
 
 
