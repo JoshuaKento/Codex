@@ -1,0 +1,41 @@
+QMainWindow {
+    background-color: #131313;
+}
+#panel {
+    background: rgba(255,255,255,0.04);
+    border-radius: 20px;
+}
+QListView {
+    border: none;
+    outline: 0;
+}
+QListView::item {
+    height: 32px;
+    border-radius: 6px;
+    padding-left: 8px;
+    background: rgba(255,255,255,0.04);
+    color: #e3e3e3;
+}
+QListView::item:selected {
+    background: qconicalgradient(cx:0.5, cy:0.5, angle:90, stop:0 #3a7bd5, stop:1 #00d2ff);
+    color: #0d0d0d;
+}
+QScrollBar:vertical {
+    width: 4px;
+    background: transparent;
+}
+QScrollBar::handle {
+    background: #00d2ff;
+    border-radius: 2px;
+}
+QPushButton.fab {
+    min-width: 56px;
+    max-width: 56px;
+    min-height: 56px;
+    max-height: 56px;
+    border-radius: 28px;
+    background: qconicalgradient(cx:0.5, cy:0.5, angle:90, stop:0 #3a7bd5, stop:1 #00d2ff);
+    color: #f5f8fb;
+    border: none;
+}
+
