@@ -9,6 +9,8 @@ class PomodoroTimer:
         self.timer_seconds = 0
         self.canvas_size = 200
         self.radius_margin = 20
+        self.ring_width = 12
+        self.ring_radius = (self.canvas_size - 2 * self.radius_margin) / 2
         self.segments = []
 
         self.time_label = tk.Label(self.root, font=("Helvetica", 16))
@@ -26,13 +28,22 @@ class PomodoroTimer:
         self.update_clock()
 
     def draw_segments(self):
+        box = (
+            self.canvas_size / 2 - self.ring_radius,
+            self.canvas_size / 2 - self.ring_radius,
+            self.canvas_size / 2 + self.ring_radius,
+            self.canvas_size / 2 + self.ring_radius,
+        )
         for i in range(60):
             start = i * 6 - 90
-            arc = self.canvas.create_arc(self.radius_margin, self.radius_margin,
-                                         self.canvas_size - self.radius_margin,
-                                         self.canvas_size - self.radius_margin,
-                                         start=start, extent=6, style=tk.ARC,
-                                         width=8, outline="lightgray")
+            arc = self.canvas.create_arc(
+                *box,
+                start=start,
+                extent=6,
+                style=tk.ARC,
+                width=self.ring_width,
+                outline="lightgray",
+            )
             self.segments.append(arc)
 
     def on_click(self, event):
@@ -40,10 +51,12 @@ class PomodoroTimer:
         dx = event.x - cx
         dy = event.y - cy
         r = math.hypot(dx, dy)
-        if r < self.canvas_size / 2 - self.radius_margin/2 or r > self.canvas_size / 2 + self.radius_margin/2:
+        inner = self.ring_radius - self.ring_width / 2
+        outer = self.ring_radius + self.ring_width / 2
+        if not (inner <= r <= outer):
             return
         angle = (math.degrees(math.atan2(-dy, dx)) + 360) % 360
-        minutes = int(angle // 6)
+        minutes = int(round(angle / 6)) % 60
         self.set_timer(minutes)
 
     def set_timer(self, minutes):
@@ -52,7 +65,7 @@ class PomodoroTimer:
 
     def highlight_segments(self, minutes):
         for i, arc in enumerate(self.segments):
-            color = "dodgerblue" if i < minutes else "lightgray"
+            color = "red" if i < minutes else "lightgray"
             self.canvas.itemconfig(arc, outline=color)
 
     def update_timer(self):

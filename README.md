@@ -33,8 +33,9 @@ from the new menu if your system has multiple audio outputs.
 ## Pomodoro Timer
 
 This repository also includes a lightweight Pomodoro timer widget. Click the
-circular ring to choose a duration from 0–60 minutes. The timer begins
-counting down immediately and the current time is shown at the top.
+circular ring to choose a duration from 0–60 minutes. Selected segments of the
+ring glow in **red** and the timer begins counting down immediately. The current
+time is shown at the top.
 
 ### Running
 
