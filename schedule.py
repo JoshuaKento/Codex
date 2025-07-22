@@ -18,6 +18,7 @@ from PyQt6.QtWidgets import (
     QColorDialog,
     QStyledItemDelegate,
     QStyleOptionViewItem,
+    QListView,
     QWidget,
 )
 
