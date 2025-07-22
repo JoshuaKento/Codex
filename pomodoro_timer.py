@@ -1,12 +1,20 @@
 import tkinter as tk
 import math
-from datetime import datetime
+from datetime import datetime, timedelta
+
+
+"""A simple Tkinter Pomodoro timer with a 60 segment ring.
+
+Each minute is represented by a 6-degree arc around the circle. Clicking a
+segment sets the countdown duration. The remaining time updates once per
+second and stays synchronized with the system clock.
+"""
 
 class PomodoroTimer:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("Pomodoro Timer")
-        self.timer_seconds = 0
+        self.end_time = None
         self.canvas_size = 200
         self.radius_margin = 20
         self.ring_width = 12
@@ -28,6 +36,7 @@ class PomodoroTimer:
         self.update_clock()
 
     def draw_segments(self):
+        # Precalculate the bounding box for each arc
         box = (
             self.canvas_size / 2 - self.ring_radius,
             self.canvas_size / 2 - self.ring_radius,
@@ -47,6 +56,7 @@ class PomodoroTimer:
             self.segments.append(arc)
 
     def on_click(self, event):
+        # Convert click coordinates to polar angle relative to the centre
         cx = cy = self.canvas_size / 2
         dx = event.x - cx
         dy = event.y - cy
@@ -60,21 +70,30 @@ class PomodoroTimer:
         self.set_timer(minutes)
 
     def set_timer(self, minutes):
-        self.timer_seconds = minutes * 60
+        if minutes <= 0:
+            self.end_time = None
+            self.timer_label.config(text="00:00")
+            self.highlight_segments(0)
+            return
+        self.end_time = datetime.now() + timedelta(minutes=minutes)
         self.update_timer()
 
     def highlight_segments(self, minutes):
+        """Update arc colours to show the selected minutes."""
         for i, arc in enumerate(self.segments):
             color = "red" if i < minutes else "lightgray"
             self.canvas.itemconfig(arc, outline=color)
 
     def update_timer(self):
-        mins = self.timer_seconds // 60
-        secs = self.timer_seconds % 60
+        if not self.end_time:
+            return
+        remaining = int((self.end_time - datetime.now()).total_seconds())
+        if remaining < 0:
+            remaining = 0
+        mins, secs = divmod(remaining, 60)
         self.timer_label.config(text=f"{mins:02d}:{secs:02d}")
-        self.highlight_segments((self.timer_seconds + 59) // 60)
-        if self.timer_seconds > 0:
-            self.timer_seconds -= 1
+        self.highlight_segments((remaining + 59) // 60)
+        if remaining > 0:
             self.root.after(1000, self.update_timer)
 
     def update_clock(self):

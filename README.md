@@ -42,3 +42,8 @@ time is shown at the top.
 ```bash
 python pomodoro_timer.py
 ```
+
+The circular ring consists of sixty narrow arcs. Each one corresponds to a
+minute of time. Clicking anywhere along the ring selects that many minutes and
+starts the countdown. The timer remains synchronized with the system clock,
+ensuring that each second ticks in real time.
