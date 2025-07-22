@@ -44,11 +44,12 @@ class PomodoroTimer:
             self.canvas_size / 2 + self.ring_radius,
         )
         for i in range(60):
-            start = i * 6 - 90
+            # Draw clockwise arcs starting from the top (12 o'clock)
+            start = 90 - i * 6
             arc = self.canvas.create_arc(
                 *box,
                 start=start,
-                extent=6,
+                extent=-6,
                 style=tk.ARC,
                 width=self.ring_width,
                 outline="lightgray",
@@ -65,8 +66,10 @@ class PomodoroTimer:
         outer = self.ring_radius + self.ring_width / 2
         if not (inner <= r <= outer):
             return
-        angle = (math.degrees(math.atan2(-dy, dx)) + 360) % 360
-        minutes = int(round(angle / 6)) % 60
+        # Calculate a clockwise angle from the top of the ring
+        angle = (math.degrees(math.atan2(dy, dx)) + 90) % 360
+        minutes = int(round(angle / 6))
+        minutes = max(0, min(60, minutes))
         self.set_timer(minutes)
 
     def set_timer(self, minutes):
