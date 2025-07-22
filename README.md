@@ -46,4 +46,6 @@ python pomodoro_timer.py
 The circular ring is a smooth outline representing sixty minutes. Clicking
 anywhere along the ring selects that many minutes and starts the countdown.
 The timer remains synchronized with the system clock, ensuring that each
-second ticks in real time.
+second ticks in real time. A schedule panel on the right side lists every
+15‑minute slot from 00:00 to 24:00 so you can jot down plans for the day.
+The current time is highlighted in this list.

@@ -14,6 +14,14 @@ class PomodoroTimer:
         self.root = tk.Tk()
         self.root.title("Pomodoro Timer")
         self.end_time = None
+
+        # layout frames
+        self.left_frame = tk.Frame(self.root)
+        self.left_frame.pack(side=tk.LEFT, padx=10, pady=10)
+        self.right_frame = tk.Frame(self.root)
+        self.right_frame.pack(side=tk.LEFT, padx=10, pady=10, fill=tk.BOTH, expand=True)
+
+        # timer ring settings
         self.canvas_size = 200
         self.radius_margin = 20
         self.ring_width = 12
@@ -21,17 +29,31 @@ class PomodoroTimer:
         self.background_ring = None
         self.progress_arc = None
 
-        self.time_label = tk.Label(self.root, font=("Helvetica", 16))
+        # timer widgets
+        self.time_label = tk.Label(self.left_frame, font=("Helvetica", 16))
         self.time_label.pack(pady=5)
 
-        self.canvas = tk.Canvas(self.root, width=self.canvas_size,
-                                height=self.canvas_size, bg="white", highlightthickness=0)
+        self.canvas = tk.Canvas(
+            self.left_frame,
+            width=self.canvas_size,
+            height=self.canvas_size,
+            bg="white",
+            highlightthickness=0,
+        )
         self.canvas.pack()
         self.draw_ring()
         self.canvas.bind("<Button-1>", self.on_click)
 
-        self.timer_label = tk.Label(self.root, text="00:00", font=("Helvetica", 24))
+        self.timer_label = tk.Label(self.left_frame, text="00:00", font=("Helvetica", 24))
         self.timer_label.pack(pady=5)
+
+        # schedule area
+        self.schedule_text = tk.Text(self.right_frame, width=20, height=30)
+        self.schedule_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.schedule_scroll = tk.Scrollbar(self.right_frame, command=self.schedule_text.yview)
+        self.schedule_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        self.schedule_text.config(yscrollcommand=self.schedule_scroll.set)
+        self.populate_schedule()
 
         self.update_clock()
 
@@ -87,6 +109,24 @@ class PomodoroTimer:
         extent = -minutes * 6
         self.canvas.itemconfig(self.progress_arc, extent=extent)
 
+    def populate_schedule(self):
+        """Fill the schedule text box with 15 minute slots."""
+        self.schedule_text.delete("1.0", tk.END)
+        for hour in range(24):
+            for quarter in range(4):
+                mins = quarter * 15
+                self.schedule_text.insert(tk.END, f"{hour:02d}:{mins:02d} \n")
+        self.schedule_text.tag_configure("current", background="lightyellow")
+
+    def highlight_schedule(self):
+        now = datetime.now()
+        total_minutes = now.hour * 60 + now.minute
+        index = total_minutes // 15 + 1
+        self.schedule_text.tag_remove("current", "1.0", tk.END)
+        line_start = f"{index}.0"
+        self.schedule_text.tag_add("current", line_start, f"{index}.end")
+        self.schedule_text.see(line_start)
+
     def update_timer(self):
         if not self.end_time:
             return
@@ -101,6 +141,7 @@ class PomodoroTimer:
 
     def update_clock(self):
         self.time_label.config(text=datetime.now().strftime("%H:%M:%S"))
+        self.highlight_schedule()
         self.root.after(1000, self.update_clock)
 
     def run(self):
