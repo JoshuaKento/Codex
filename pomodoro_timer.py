@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import filedialog
 import math
 from datetime import datetime, timedelta
 
@@ -48,11 +49,19 @@ class PomodoroTimer:
         self.timer_label.pack(pady=5)
 
         # schedule area
-        self.schedule_text = tk.Text(self.right_frame, width=20, height=30)
+        self.schedule_container = tk.Frame(self.right_frame)
+        self.schedule_container.pack(fill=tk.BOTH, expand=True)
+
+        self.schedule_text = tk.Text(self.schedule_container, width=20, height=30)
         self.schedule_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self.schedule_scroll = tk.Scrollbar(self.right_frame, command=self.schedule_text.yview)
+        self.schedule_scroll = tk.Scrollbar(self.schedule_container, command=self.schedule_text.yview)
         self.schedule_scroll.pack(side=tk.RIGHT, fill=tk.Y)
         self.schedule_text.config(yscrollcommand=self.schedule_scroll.set)
+
+        self.button_frame = tk.Frame(self.right_frame)
+        self.button_frame.pack(fill=tk.X, pady=(5, 0))
+        tk.Button(self.button_frame, text="Import", command=self.import_schedule).pack(side=tk.LEFT, padx=5)
+        tk.Button(self.button_frame, text="Export", command=self.export_schedule).pack(side=tk.LEFT)
         self.populate_schedule()
 
         self.update_clock()
@@ -126,6 +135,26 @@ class PomodoroTimer:
         line_start = f"{index}.0"
         self.schedule_text.tag_add("current", line_start, f"{index}.end")
         self.schedule_text.see(line_start)
+
+    def import_schedule(self):
+        """Load schedule text from a file into the text widget."""
+        filename = filedialog.askopenfilename(
+            filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
+        )
+        if filename:
+            with open(filename, "r", encoding="utf-8") as f:
+                self.schedule_text.delete("1.0", tk.END)
+                self.schedule_text.insert(tk.END, f.read())
+
+    def export_schedule(self):
+        """Save the current schedule text to a file."""
+        filename = filedialog.asksaveasfilename(
+            defaultextension=".txt",
+            filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")],
+        )
+        if filename:
+            with open(filename, "w", encoding="utf-8") as f:
+                f.write(self.schedule_text.get("1.0", tk.END))
 
     def update_timer(self):
         if not self.end_time:

@@ -49,3 +49,5 @@ The timer remains synchronized with the system clock, ensuring that each
 second ticks in real time. A schedule panel on the right side lists every
 15‑minute slot from 00:00 to 24:00 so you can jot down plans for the day.
 The current time is highlighted in this list.
+Two new buttons let you **Import** a text file into the schedule panel and
+**Export** its contents for later use.
