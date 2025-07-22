@@ -5,48 +5,54 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import List, Optional
 
-from PyQt6.QtCore import (
-    QSize,
-    QUrl,
-    QEasingCurve,
-    QPointF,
-    QPropertyAnimation,
-    Qt,
-    QTimer,
-    pyqtProperty,
-)
-from PyQt6.QtGui import (
-    QAction,
-    QColor,
-    QConicalGradient,
-    QFont,
-    QFontDatabase,
-    QPainter,
-    QPalette,
-    QPen,
-    
-)
-from PyQt6.QtMultimedia import QSoundEffect
-from PyQt6.QtWidgets import (
-    QApplication,
-    QCheckBox,
-    QGraphicsDropShadowEffect,
-    QGraphicsColorizeEffect,
-    QListView,
-    QMainWindow,
-    QPushButton,
-    QStyledItemDelegate,
-    QStyleOptionViewItem,
-    QStyle,
-    QWidget,
-    QHBoxLayout,
-    QVBoxLayout,
-    QLabel,
-    QLineEdit,
-    QColorDialog,
-    QFrame,
-)
-from PyQt6.QtCore import QAbstractListModel, QModelIndex, QVariant, QSettings
+try:
+    from PyQt6.QtCore import (
+        QSize,
+        QUrl,
+        QEasingCurve,
+        QPointF,
+        QPropertyAnimation,
+        Qt,
+        QTimer,
+        pyqtProperty,
+    )
+    from PyQt6.QtGui import (
+        QAction,
+        QColor,
+        QConicalGradient,
+        QFont,
+        QFontDatabase,
+        QPainter,
+        QPalette,
+        QPen,
+
+    )
+    from PyQt6.QtMultimedia import QSoundEffect
+    from PyQt6.QtWidgets import (
+        QApplication,
+        QCheckBox,
+        QGraphicsDropShadowEffect,
+        QGraphicsColorizeEffect,
+        QListView,
+        QMainWindow,
+        QPushButton,
+        QStyledItemDelegate,
+        QStyleOptionViewItem,
+        QStyle,
+        QWidget,
+        QHBoxLayout,
+        QVBoxLayout,
+        QLabel,
+        QLineEdit,
+        QColorDialog,
+        QFrame,
+    )
+    from PyQt6.QtCore import QAbstractListModel, QModelIndex, QVariant, QSettings
+except ModuleNotFoundError as exc:  # pragma: no cover - environment specific
+    raise SystemExit(
+        "PyQt6 is required to run this application. "
+        "Install dependencies with './setup.sh'."
+    ) from exc
 
 import resources.resources
 

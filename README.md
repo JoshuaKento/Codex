@@ -57,5 +57,6 @@ Two new buttons let you **Import** a text file into the schedule panel and
 A new PyQt6-based Pomodoro timer is available in `main.py`. It shows a circular progress ring with smooth animation and a schedule list. Run it with:
 
 ```bash
+./setup.sh  # create venv and install PyQt6
 python main.py
 ```
