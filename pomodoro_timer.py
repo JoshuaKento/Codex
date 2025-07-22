@@ -3,11 +3,10 @@ import math
 from datetime import datetime, timedelta
 
 
-"""A simple Tkinter Pomodoro timer with a 60 segment ring.
+"""A simple Tkinter Pomodoro timer with a continuous 60 minute ring.
 
-Each minute is represented by a 6-degree arc around the circle. Clicking a
-segment sets the countdown duration. The remaining time updates once per
-second and stays synchronized with the system clock.
+Click the ring to choose a number of minutes. The selected portion glows
+red while the remaining time is tracked in real time using the system clock.
 """
 
 class PomodoroTimer:
@@ -19,7 +18,8 @@ class PomodoroTimer:
         self.radius_margin = 20
         self.ring_width = 12
         self.ring_radius = (self.canvas_size - 2 * self.radius_margin) / 2
-        self.segments = []
+        self.background_ring = None
+        self.progress_arc = None
 
         self.time_label = tk.Label(self.root, font=("Helvetica", 16))
         self.time_label.pack(pady=5)
@@ -27,7 +27,7 @@ class PomodoroTimer:
         self.canvas = tk.Canvas(self.root, width=self.canvas_size,
                                 height=self.canvas_size, bg="white", highlightthickness=0)
         self.canvas.pack()
-        self.draw_segments()
+        self.draw_ring()
         self.canvas.bind("<Button-1>", self.on_click)
 
         self.timer_label = tk.Label(self.root, text="00:00", font=("Helvetica", 24))
@@ -35,26 +35,26 @@ class PomodoroTimer:
 
         self.update_clock()
 
-    def draw_segments(self):
-        # Precalculate the bounding box for each arc
+    def draw_ring(self):
         box = (
             self.canvas_size / 2 - self.ring_radius,
             self.canvas_size / 2 - self.ring_radius,
             self.canvas_size / 2 + self.ring_radius,
             self.canvas_size / 2 + self.ring_radius,
         )
-        for i in range(60):
-            # Draw clockwise arcs starting from the top (12 o'clock)
-            start = 90 - i * 6
-            arc = self.canvas.create_arc(
-                *box,
-                start=start,
-                extent=-6,
-                style=tk.ARC,
-                width=self.ring_width,
-                outline="lightgray",
-            )
-            self.segments.append(arc)
+        self.background_ring = self.canvas.create_oval(
+            *box,
+            outline="lightgray",
+            width=self.ring_width,
+        )
+        self.progress_arc = self.canvas.create_arc(
+            *box,
+            start=90,
+            extent=0,
+            style=tk.ARC,
+            width=self.ring_width,
+            outline="red",
+        )
 
     def on_click(self, event):
         # Convert click coordinates to polar angle relative to the centre
@@ -76,16 +76,16 @@ class PomodoroTimer:
         if minutes <= 0:
             self.end_time = None
             self.timer_label.config(text="00:00")
-            self.highlight_segments(0)
+            self.highlight_minutes(0)
             return
         self.end_time = datetime.now() + timedelta(minutes=minutes)
+        self.highlight_minutes(minutes)
         self.update_timer()
 
-    def highlight_segments(self, minutes):
-        """Update arc colours to show the selected minutes."""
-        for i, arc in enumerate(self.segments):
-            color = "red" if i < minutes else "lightgray"
-            self.canvas.itemconfig(arc, outline=color)
+    def highlight_minutes(self, minutes):
+        """Draw a continuous arc highlighting the selected minutes."""
+        extent = -minutes * 6
+        self.canvas.itemconfig(self.progress_arc, extent=extent)
 
     def update_timer(self):
         if not self.end_time:
@@ -95,7 +95,7 @@ class PomodoroTimer:
             remaining = 0
         mins, secs = divmod(remaining, 60)
         self.timer_label.config(text=f"{mins:02d}:{secs:02d}")
-        self.highlight_segments((remaining + 59) // 60)
+        self.highlight_minutes((remaining + 59) // 60)
         if remaining > 0:
             self.root.after(1000, self.update_timer)
 
